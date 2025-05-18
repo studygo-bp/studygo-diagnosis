@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>StudyGO タイプ診断（15問・完全版）</title>
+  <style>
+    body { font-family: 'Segoe UI', 'メイリオ', sans-serif; background: #f9f9ff; padding: 20px; }
+    .question { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 0 8px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    button { display: block; margin: 8px 0; padding: 10px; border-radius: 6px; background: #f0f0f0; border: 1px solid #ccc; cursor: pointer; }
+    button:hover { background: #dde8ff; border-color: #6698ff; }
+    #result { font-weight: bold; margin-top: 30px; text-align: center; }
+    #result img { margin-top: 20px; width: 80%; max-width: 400px; border-radius: 10px; }
+    .note { font-size: 0.9em; color: #666; margin-top: 10px; }
+  </style>
+</head>
+<body>
+<h1>あなたに最適な勉強場所は？（15問）</h1>
+<div id="quiz"></div>
+<div id="result"></div>
+
+<script>
+const questions = [
+  { text: "作業時間はどのくらい？", answers: [
+    { text: "1〜2時間", score: { cafe: 1, family: 1 } },
+    { text: "3〜5時間", score: { coworking: 1, toshokan: 1 } },
+    { text: "6時間以上", score: { jishushitsu: 1 } }
+  ]},
+  { text: "集中するにはどんな環境が良いですか？", answers: [
+    { text: "静かな場所がいい", score: { jishushitsu: 1, toshokan: 1 } },
+    { text: "少しざわついている方が集中できる", score: { coworking: 1, cafe: 1 } },
+    { text: "にぎやかでも気にならない", score: { family: 1 } }
+  ]},
+  { text: "Wi-Fiや電源は必要ですか？", answers: [
+    { text: "必須", score: { coworking: 1, cafe: 1 } },
+    { text: "あると嬉しい", score: { toshokan: 1, family: 1 } },
+    { text: "不要", score: { jishushitsu: 1 } }
+  ]},
+  { text: "利用目的は？", answers: [
+    { text: "資格・受験の勉強", score: { jishushitsu: 1, toshokan: 1 } },
+    { text: "パソコン仕事・リモート会議", score: { coworking: 1 } },
+    { text: "読書・軽作業・趣味", score: { cafe: 1, family: 1 } }
+  ]},
+  { text: "場所のインテリアは？", answers: [
+    { text: "おしゃれな雰囲気が好き", score: { cafe: 1, coworking: 1 } },
+    { text: "無機質でも静かならOK", score: { jishushitsu: 1, toshokan: 1 } },
+    { text: "落ち着いた空間がいい", score: { toshokan: 1 } }
+  ]},
+  { text: "1日の利用時間は？", answers: [
+    { text: "1〜2時間", score: { cafe: 1, family: 1 } },
+    { text: "3〜5時間", score: { coworking: 1, toshokan: 1 } },
+    { text: "6時間以上", score: { jishushitsu: 1 } }
+  ]},
+  { text: "周囲の目は気になりますか？", answers: [
+    { text: "他人に見られると集中できる", score: { coworking: 1, cafe: 1 } },
+    { text: "見られない方が集中できる", score: { jishushitsu: 1, toshokan: 1 } },
+    { text: "どちらでも大丈夫", score: { family: 1 } }
+  ]},
+  { text: "作業中の飲食は？", answers: [
+    { text: "しっかり食事を取りたい", score: { family: 1 } },
+    { text: "飲み物・軽食のみ", score: { cafe: 1 } },
+    { text: "飲食しない", score: { jishushitsu: 1, toshokan: 1 } }
+  ]},
+  { text: "アクセスの良さは？", answers: [
+    { text: "駅近が絶対条件", score: { cafe: 1, family: 1 } },
+    { text: "少し遠くてもOK", score: { toshokan: 1, jishushitsu: 1 } },
+    { text: "どちらでもよい", score: { coworking: 1 } }
+  ]},
+  { text: "利用頻度は？", answers: [
+    { text: "毎日または週4以上", score: { jishushitsu: 1, coworking: 1 } },
+    { text: "週1〜2回", score: { toshokan: 1, cafe: 1 } },
+    { text: "たまに利用", score: { family: 1 } }
+  ]},
+  { text: "料金感覚は？", answers: [
+    { text: "無料が理想", score: { toshokan: 1 } },
+    { text: "500円〜程度なら可", score: { cafe: 1, family: 1 } },
+    { text: "1000円以上でも設備が良ければ", score: { jishushitsu: 1, coworking: 1 } }
+  ]},
+  { text: "休憩スタイルは？", answers: [
+    { text: "食事・飲み物が重要", score: { family: 1 } },
+    { text: "軽くリフレッシュできればOK", score: { cafe: 1 } },
+    { text: "集中しきって一気に終わらせたい", score: { jishushitsu: 1, toshokan: 1 } }
+  ]},
+  { text: "継続しやすさは？", answers: [
+    { text: "ルーティン利用したい", score: { jishushitsu: 1, coworking: 1 } },
+    { text: "自由にその日次第で決めたい", score: { cafe: 1, family: 1 } },
+    { text: "行ける時だけ使いたい", score: { toshokan: 1 } }
+  ]},
+  { text: "気分転換は？", answers: [
+    { text: "お店の雰囲気を変える", score: { cafe: 1 } },
+    { text: "誰かと話すことで気分転換", score: { coworking: 1 } },
+    { text: "静かな空間で内省", score: { jishushitsu: 1, toshokan: 1 } }
+  ]},
+  { text: "静かすぎると…", answers: [
+    { text: "逆に眠くなる", score: { family: 1 } },
+    { text: "集中できる", score: { jishushitsu: 1, toshokan: 1 } },
+    { text: "適度な音が欲しい", score: { coworking: 1, cafe: 1 } }
+  ]}
+];
+
+let current = 0;
+let score = { jishushitsu: 0, toshokan: 0, coworking: 0, cafe: 0, family: 0 };
+
+const quiz = document.getElementById("quiz");
+const result = document.getElementById("result");
+
+function showQuestion() {
+  const q = questions[current];
+  quiz.innerHTML = `<div class="question"><p><strong>Q${current + 1}.</strong> ${q.text}</p></div>`;
+  q.answers.forEach((a) => {
+    const btn = document.createElement("button");
+    btn.textContent = a.text;
+    btn.onclick = () => {
+      Object.keys(a.score).forEach(type => score[type] += a.score[type]);
+      current++;
+      if (current < questions.length) {
+        showQuestion();
+      } else {
+        showResult();
+      }
+    };
+    quiz.appendChild(btn);
+  });
+}
+
+function showResult() {
+  const max = Math.max(...Object.values(score));
+  const type = Object.keys(score).find(k => score[k] === max);
+  const names = {
+    jishushitsu: "有料自習室",
+    toshokan: "図書館",
+    coworking: "コワーキングスペース",
+    cafe: "カフェ",
+    family: "ファミリーレストラン"
+  };
+  const images = {
+    jishushitsu: "https://source.unsplash.com/featured/?study,desk",
+    toshokan: "https://source.unsplash.com/featured/?library,study",
+    coworking: "https://source.unsplash.com/featured/?coworking,office",
+    cafe: "https://source.unsplash.com/featured/?cafe,coffee",
+    family: "https://source.unsplash.com/featured/?diner,restaurant"
+  };
+
+  let resultHTML = `<h2>🎯 あなたに最適なのは【${names[type]}】です！</h2>
+    <img src="${images[type]}" alt="${names[type]}のイメージ">
+    <p><a href="https://studygo.jp" target="_blank">▶ 掲載店舗を見る</a></p>`;
+
+  if (["cafe", "family", "toshokan"].includes(type)) {
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const query = encodeURIComponent(names[type]);
+      const mapURL = `https://www.google.com/maps/search/${query}/@${lat},${lng},15z`;
+      result.innerHTML = resultHTML + 
+        `<p><a href="${mapURL}" target="_blank">📍 周辺の${names[type]}をGoogleマップで探す</a></p>
+         <p class="note">※ 現在、StudyGOでは図書館・カフェ・ファミレスの掲載はありません。順次拡大中です。</p>`;
+    }, function() {
+      result.innerHTML = resultHTML + 
+        `<p>※ 位置情報の取得に失敗しました。</p>
+         <p class="note">※ 現在、StudyGOでは図書館・カフェ・ファミレスの掲載はありません。順次拡大中です。</p>`;
+    });
+  } else {
+    result.innerHTML = resultHTML;
+  }
+
+  quiz.innerHTML = "";
+}
+
+showQuestion();
+</script>
+</body>
+</html>
