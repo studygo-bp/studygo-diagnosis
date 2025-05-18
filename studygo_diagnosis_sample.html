@@ -1,0 +1,93 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>StudyGO タイプ診断</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .question { margin-bottom: 20px; }
+    button { display: block; margin: 5px 0; }
+    #result { margin-top: 30px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <h1>あなたに最適な勉強場所は？</h1>
+  <div id="quiz"></div>
+  <div id="result"></div>
+
+  <script>
+    const questions = [
+      {
+        text: "作業時間はどのくらい？",
+        answers: [
+          { text: "1〜2時間", score: { cafe: 1, family: 1 } },
+          { text: "3〜5時間", score: { coworking: 1, toshokan: 1 } },
+          { text: "6時間以上", score: { jishushitsu: 1 } }
+        ]
+      },
+      {
+        text: "集中スタイルは？",
+        answers: [
+          { text: "静寂が必要", score: { jishushitsu: 1, toshokan: 1 } },
+          { text: "少しざわついててもOK", score: { coworking: 1, cafe: 1 } },
+          { text: "にぎやかでも平気", score: { family: 1 } }
+        ]
+      },
+      {
+        text: "費用感は？",
+        answers: [
+          { text: "できれば無料がいい", score: { toshokan: 1 } },
+          { text: "500円くらいまで", score: { cafe: 1, family: 1 } },
+          { text: "1000円以上でもOK", score: { jishushitsu: 1, coworking: 1 } }
+        ]
+      }
+    ];
+
+    let current = 0;
+    let score = { jishushitsu: 0, toshokan: 0, coworking: 0, cafe: 0, family: 0 };
+
+    const quiz = document.getElementById("quiz");
+    const result = document.getElementById("result");
+
+    function showQuestion() {
+      const q = questions[current];
+      quiz.innerHTML = `<div class="question"><p>${q.text}</p></div>`;
+      q.answers.forEach((a, idx) => {
+        const btn = document.createElement("button");
+        btn.textContent = a.text;
+        btn.onclick = () => {
+          Object.keys(a.score).forEach(type => {
+            score[type] += a.score[type];
+          });
+          current++;
+          if (current < questions.length) {
+            showQuestion();
+          } else {
+            showResult();
+          }
+        };
+        quiz.appendChild(btn);
+      });
+    }
+
+    function showResult() {
+      const max = Math.max(...Object.values(score));
+      const type = Object.keys(score).find(k => score[k] === max);
+      const names = {
+        jishushitsu: "有料自習室",
+        toshokan: "図書館",
+        coworking: "コワーキングスペース",
+        cafe: "カフェ",
+        family: "ファミリーレストラン"
+      };
+      result.innerHTML = `あなたに最適なのは【${names[type]}】です！<br><a href="https://studygo.jp">▶ 掲載店舗を見る</a>`;
+      quiz.innerHTML = "";
+    }
+
+    showQuestion();
+  </script>
+
+</body>
+</html>
